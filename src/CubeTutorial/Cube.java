@@ -50,7 +50,7 @@ public class Cube {
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
- 
+        
         int WIDTH = 800;
         int HEIGHT = 600;
  
@@ -96,7 +96,7 @@ public class Cube {
  
      // Set the clear color
         glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
-
+        glEnable(GL_BLEND);
         float rotAngle = 0.1f;
         
         // Run the rendering loop until the user has attempted to close

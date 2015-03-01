@@ -7,5 +7,6 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/Elliot/workspace/tutsedge/dependencies/native/windows/x64"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Elliot/workspace/tutsedge/dependencies/slick-util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,14 +1,46 @@
 package Basics;
-import org.lwjgl.Sys;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
- 
+import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
+import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
+import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
+import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
+import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
+import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
+import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
+import static org.lwjgl.glfw.GLFW.glfwInit;
+import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
+import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.glfwShowWindow;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
+import static org.lwjgl.glfw.GLFW.glfwTerminate;
+import static org.lwjgl.glfw.GLFW.glfwWindowHint;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+import static org.lwjgl.opengl.GL11.GL_FALSE;
+import static org.lwjgl.opengl.GL11.GL_TRUE;
+import static org.lwjgl.system.MemoryUtil.NULL;
+
 import java.nio.ByteBuffer;
- 
-import static org.lwjgl.glfw.Callbacks.*;
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.system.MemoryUtil.*;
+
+import org.lwjgl.Sys;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.GLFWvidmode;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
+
+import Models.RawModel;
+import Models.TexturedModel;
+import Render.Loader;
+import Render.Renderer;
+import Shaders.StaticShader;
+import Textures.ModelTexture;
  
 public class Driver {
  
@@ -18,6 +50,9 @@ public class Driver {
  
     // The window handle
     private long window;
+    
+    Loader loader = new Loader();
+    Renderer renderer = new Renderer();
  
     public void run() {
         System.out.println("Hello LWJGL " + Sys.getVersion() + "!");
@@ -50,8 +85,8 @@ public class Driver {
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
  
-        int WIDTH = 300;
-        int HEIGHT = 300;
+        int WIDTH = 800;
+        int HEIGHT = 600;
  
         // Create the window
         window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World!", NULL, NULL);
@@ -92,21 +127,52 @@ public class Driver {
         // creates the ContextCapabilities instance and makes the OpenGL
         // bindings available for use.
         GLContext.createFromCurrent();
- 
-        // Set the clear color
-        glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
- 
+        
+
+        StaticShader shader = new StaticShader();
+        
+        float[] vertices = {
+        	-0.5f, 0.5f, 0f,
+        	-0.5f, -0.5f, 0f,
+        	0.5f, -0.5f, 0f,
+        	0.5f, 0.5f, 0f,
+        };
+        
+        int[] indices = {
+        		0,1,2,
+        		0,2,3
+        };
+        
+        float[] textureCoords = {
+        		0,0,
+        		0,1,
+        		1,1,
+        		1,0
+        };
+        
+        RawModel model = loader.loadToVAO(vertices,textureCoords, indices);
+        ModelTexture texture = new ModelTexture(loader.loadTexture("crate"));
+        TexturedModel texturedModel = new TexturedModel(model, texture);
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while ( glfwWindowShouldClose(window) == GL_FALSE ) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
- 
+// 
             glfwSwapBuffers(window); // swap the color buffers
  
+            renderer.prepare();
+            shader.start();
+            
+            renderer.render(texturedModel);
+            
+            shader.stop();
+            
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
         }
+        
+        shader.cleanUp();
+        loader.cleanUp();
     }
  
     public static void main(String[] args) {
